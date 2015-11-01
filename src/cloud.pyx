@@ -23,17 +23,6 @@ cimport numpy as np
 cimport cython
 
 
-cdef double TWOPI = M_PI*2
-
-
-def dict_list_add(dict d, k, v):
-
-  if d.has_key(k):
-    d[k].append(v)
-  else:
-    d[k] = [v]
-
-
 cdef class Cloud:
   """
   """
@@ -165,14 +154,22 @@ cdef class Cloud:
   ):
 
     cdef long i
-    self.rules = r
+    cdef long j
+    cdef long k
+    cdef long s = len(r)
+    self.rules = <double *>malloc(s*s*sizeof(double))
+
+    for i in xrange(s):
+      for j in xrange(s):
+        k = i*s+j
+        self.rules[k] = r[i,j]
 
     return 1
 
   cpdef long init_cloud(
     self,
     np.ndarray[double, mode="c",ndim=2] x,
-    np.ndarray[double, mode="c",ndim=1] a
+    np.ndarray[long, mode="c",ndim=1] a
   ):
 
     cdef long i
@@ -188,4 +185,8 @@ cdef class Cloud:
   cpdef long get_vnum(self):
 
     return self.vnum
+
+  cpdef double get_start_time(self):
+
+    return self.start_time
 

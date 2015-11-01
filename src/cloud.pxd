@@ -23,7 +23,7 @@ cdef class Cloud:
   cdef double *Z
   cdef long *A
 
-  cdef np.ndarray[long, mode="c",ndim=2] rules
+  cdef double *rules
 
   cdef Zonemap3d zonemap
 
@@ -39,18 +39,18 @@ cdef class Cloud:
 
   ## EXTERNAL
 
-  cpdef long np_get_vertices(self, np.ndarray[double, mode="c",ndim=2] x):
+  cpdef long np_get_vertices(self, np.ndarray[double, mode="c",ndim=2] x)
 
   cpdef long init_cloud(
     self,
     np.ndarray[double, mode="c",ndim=2] x,
-    np.ndarray[double, mode="c",ndim=1] a
-  ):
+    np.ndarray[long, mode="c",ndim=1] a
+  )
 
   cpdef long set_rules(
     self,
     np.ndarray[double, mode="c",ndim=2] r
-  ):
+  )
 
   ## INFO
 

@@ -3,7 +3,7 @@
 
 from __future__ import division
 
-cimport mesh3d
+cimport cloud
 cimport numpy as np
 
 from libc.stdlib cimport malloc, free

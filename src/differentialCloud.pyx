@@ -4,7 +4,7 @@
 from __future__ import division
 
 cimport cython
-cimport mesh3d
+cimport cloud
 
 from zonemap3d cimport Zonemap3d
 
@@ -26,7 +26,7 @@ cdef class DifferentialCloud(cloud.Cloud):
 
   def __init__(self, long nmax, double zonewidth, double nearl, double farl, long procs):
 
-    mesh3d.Mesh3d.__init__(self, nmax, zonewidth, procs)
+    cloud.Cloud.__init__(self, nmax, zonewidth, procs)
 
     self.nearl = nearl
 
