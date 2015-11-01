@@ -70,6 +70,16 @@ def get_args():
     type=str,
     default='./res/res'
   )
+  parser.add_argument(
+    '--startRad',
+    type=float,
+    default=0.01
+  )
+  parser.add_argument(
+    '--startNum',
+    type=int,
+    default=100
+  )
 
   return parser.parse_args()
 

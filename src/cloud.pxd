@@ -23,8 +23,6 @@ cdef class Cloud:
   cdef double *Z
   cdef long *A
 
-  cdef double *rules
-
   cdef Zonemap3d zonemap
 
   ## FUNCTIONS
@@ -45,11 +43,6 @@ cdef class Cloud:
     self,
     np.ndarray[double, mode="c",ndim=2] x,
     np.ndarray[long, mode="c",ndim=1] a
-  )
-
-  cpdef long set_rules(
-    self,
-    np.ndarray[double, mode="c",ndim=2] r
   )
 
   ## INFO

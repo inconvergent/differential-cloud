@@ -19,6 +19,8 @@ cdef class DifferentialCloud(cloud.Cloud):
   cdef double *DY
   cdef double *DZ
 
+  cdef long *rules
+
   ## FUNCTIONS
 
   cdef long __reject(
@@ -33,22 +35,16 @@ cdef class DifferentialCloud(cloud.Cloud):
     long num
   ) nogil
 
-  #cdef long __attract(
-    #self,
-    #long v1,
-    #double *dx,
-    #double *dy,
-    #double *dz,
-    #double stp,
-    #long *vertices,
-    #long num,
-  #) nogil
-
   ## EXTERNAL
 
   cpdef long position_noise(
     self,
     np.ndarray[double, mode="c",ndim=2] a
+  )
+
+  cpdef long init_rules(
+    self,
+    np.ndarray[long, mode="c",ndim=2] r
   )
 
   cpdef long optimize_position(

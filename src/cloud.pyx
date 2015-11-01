@@ -132,6 +132,29 @@ cdef class Cloud:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
+  cpdef long init_cloud(
+    self,
+    np.ndarray[double, mode="c",ndim=2] x,
+    np.ndarray[long, mode="c",ndim=1] a
+  ):
+
+    cdef long i
+
+    for i in xrange(len(a)):
+
+      self.X[i] = x[i, 0]
+      self.Y[i] = x[i, 1]
+      self.Z[i] = x[i, 2]
+      self.A[i] = a[i]
+      self.zonemap.__add_vertex(i)
+
+    self.vnum = len(a)
+
+    return self.vnum
+
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
   cpdef long np_get_vertices(self, np.ndarray[double, mode="c",ndim=2] x):
 
     cdef long v
@@ -147,39 +170,6 @@ cdef class Cloud:
         c += 1
 
     return c
-
-  cpdef long set_rules(
-    self,
-    np.ndarray[double, mode="c",ndim=2] r
-  ):
-
-    cdef long i
-    cdef long j
-    cdef long k
-    cdef long s = len(r)
-    self.rules = <double *>malloc(s*s*sizeof(double))
-
-    for i in xrange(s):
-      for j in xrange(s):
-        k = i*s+j
-        self.rules[k] = r[i,j]
-
-    return 1
-
-  cpdef long init_cloud(
-    self,
-    np.ndarray[double, mode="c",ndim=2] x,
-    np.ndarray[long, mode="c",ndim=1] a
-  ):
-
-    cdef long i
-
-    for i in xrange(len(a)):
-
-      self.X[i] = x[i, 0]
-      self.Y[i] = x[i, 1]
-      self.Z[i] = x[i, 2]
-      self.A[i] = a[i]
 
   @cython.nonecheck(False)
   cpdef long get_vnum(self):

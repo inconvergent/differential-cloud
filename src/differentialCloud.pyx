@@ -69,103 +69,78 @@ cdef class DifferentialCloud(cloud.Cloud):
     long num
   ) nogil:
 
-    cdef long k
-    cdef long i
-    cdef long k4
-    cdef long neigh
-
-    cdef double dx
-    cdef double dy
-    cdef double dz
-    cdef double nrm
-    cdef double s
-
-    cdef long cont
-
-    cdef double resx = 0.0
-    cdef double resy = 0.0
-    cdef double resz = 0.0
-
-    for k in range(num):
-
-      neigh = vertices[k]
-
-      if neigh == v:
-        continue
-
-      k4 = k*4
-      nrm = dst[k4+3]
-
-      if nrm>self.farl or nrm<=1e-9:
-        continue
-
-      dx = dst[k4]
-      dy = dst[k4+1]
-      dz = dst[k4+2]
-
-      s = self.farl/nrm-1.0
-
-      resx += dx*s
-      resy += dy*s
-      resz += dz*s
-
-    diffx[v] += resx*stp
-    diffy[v] += resy*stp
-    diffz[v] += resz*stp
-
-    return num
-
-  #@cython.wraparound(False)
-  #@cython.boundscheck(False)
-  #@cython.nonecheck(False)
-  #@cython.cdivision(True)
-  #cdef long __attract(
-    #self, long v1,
-    #double *diffx,
-    #double *diffy,
-    #double *diffz,
-    #double stp,
-    #long *vertices,
-    #long num
-  #) nogil:
-
-    #cdef long v2
     #cdef long k
+    #cdef long i
+    #cdef long k4
+    #cdef long neigh
 
     #cdef double dx
     #cdef double dy
     #cdef double dz
     #cdef double nrm
-
     #cdef double s
 
-    #for k in xrange(num):
+    #cdef long cont
 
-      #v2 = vertices[k]
+    #cdef double resx = 0.0
+    #cdef double resy = 0.0
+    #cdef double resz = 0.0
 
-      #dx = self.X[v2]-self.X[v1]
-      #dy = self.Y[v2]-self.Y[v1]
-      #dz = self.Z[v2]-self.Z[v1]
-      #nrm = sqrt(dx*dx+dy*dy+dz*dz)
+    #for k in range(num):
 
-      #if nrm<1e-9:
+      #neigh = vertices[k]
+
+      #if neigh == v:
         #continue
 
-      #s = stp/nrm
+      #k4 = k*4
+      #nrm = dst[k4+3]
 
-      #if nrm>self.nearl:
+      #if nrm>self.farl or nrm<=1e-9:
+        #continue
 
-        #### attract
-        #diffx[v1] += dx*s
-        #diffy[v1] += dy*s
-        #diffz[v1] += dz*s
+      #dx = dst[k4]
+      #dy = dst[k4+1]
+      #dz = dst[k4+2]
 
-    #return 1
+      #s = self.farl/nrm-1.0
+
+      #resx += dx*s
+      #resy += dy*s
+      #resz += dz*s
+
+    #diffx[v] += resx*stp
+    #diffy[v] += resy*stp
+    #diffz[v] += resz*stp
+
+    return num
 
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  @cython.cdivision(True)
+  cpdef long init_rules(
+    self,
+    np.ndarray[long, mode="c",ndim=2] r
+  ):
+
+    cdef long i
+    cdef long j
+    cdef long k
+    cdef long s = len(r)
+    self.rules = <long *>malloc(s*s*sizeof(long))
+
+    for i in xrange(s):
+      for j in xrange(s):
+        k = i*s+j
+        self.rules[k] = r[i,j]
+
+    return 1
+
+
+  #@cython.wraparound(False)
+  #@cython.boundscheck(False)
+  #@cython.nonecheck(False)
+  #@cython.cdivision(True)
   cpdef long optimize_position(
     self,
     double reject_stp,
@@ -190,12 +165,15 @@ cdef class DifferentialCloud(cloud.Cloud):
 
     cdef long asize = self.zonemap.__get_max_sphere_count()
 
-    with nogil, parallel(num_threads=self.procs):
+    ##with nogil, parallel(num_threads=self.procs):
+    #with nogil:
+    if True:
 
       vertices = <long *>malloc(asize*sizeof(long))
       dst = <double *>malloc(asize*sizeof(double)*4)
 
-      for v in prange(self.vnum, schedule='guided'):
+      ##for v in prange(self.vnum, schedule='guided'):
+      for v in xrange(self.vnum):
 
         self.DX[v] = 0.0
         self.DY[v] = 0.0
@@ -223,7 +201,8 @@ cdef class DifferentialCloud(cloud.Cloud):
       free(vertices)
       free(dst)
 
-      for v in prange(self.vnum, schedule='static'):
+      #for v in prange(self.vnum, schedule='static'):
+      for v in xrange(self.vnum):
 
         dx = self.DX[v]
         dy = self.DY[v]
@@ -236,9 +215,9 @@ cdef class DifferentialCloud(cloud.Cloud):
           dy = dy / nrm * stp_limit
           dz = dz / nrm * stp_limit
 
-          x = self.X[v] + dx
-          y = self.Y[v] + dy
-          z = self.Z[v] + dz
+        x = self.X[v] + dx
+        y = self.Y[v] + dy
+        z = self.Z[v] + dz
 
         self.X[v] = x
         self.Y[v] = y
