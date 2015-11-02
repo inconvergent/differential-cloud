@@ -56,7 +56,7 @@ cdef class DifferentialCloud(cloud.Cloud):
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cdef long __get_rule_by_types(self, long i, long j):
+  cdef long __get_rule_by_types(self, long i, long j) nogil:
 
     cdef long k = i*self.num_rules+j
     return self.rules[k]
@@ -65,7 +65,7 @@ cdef class DifferentialCloud(cloud.Cloud):
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef long __reject(
+  cdef long __rules(
     self,
     long v,
     double *diffx,
@@ -75,7 +75,7 @@ cdef class DifferentialCloud(cloud.Cloud):
     long *vertices,
     double *dst,
     long num
-  ):
+  ) nogil:
 
     cdef long k
     cdef long i
@@ -102,7 +102,7 @@ cdef class DifferentialCloud(cloud.Cloud):
       k4 = k*4
       nrm = dst[k4+3]
 
-      if nrm>self.farl or nrm<=self.nearl:
+      if nrm>self.farl or nrm<=self.nearl*10.0:
         continue
 
       dx = dst[k4]
@@ -178,15 +178,14 @@ cdef class DifferentialCloud(cloud.Cloud):
 
     cdef long asize = self.zonemap.__get_max_sphere_count()
 
-    ##with nogil, parallel(num_threads=self.procs):
+    with nogil, parallel(num_threads=self.procs):
     #with nogil:
-    if True:
 
       vertices = <long *>malloc(asize*sizeof(long))
       dst = <double *>malloc(asize*sizeof(double)*4)
 
-      ##for v in prange(self.vnum, schedule='guided'):
-      for v in xrange(self.vnum):
+      for v in prange(self.vnum, schedule='guided'):
+      #for v in xrange(self.vnum):
 
         self.DX[v] = 0.0
         self.DY[v] = 0.0
@@ -200,7 +199,7 @@ cdef class DifferentialCloud(cloud.Cloud):
           vertices,
           dst
         )
-        self.__reject(
+        self.__rules(
           v,
           self.DX,
           self.DY,
@@ -214,8 +213,8 @@ cdef class DifferentialCloud(cloud.Cloud):
       free(vertices)
       free(dst)
 
-      #for v in prange(self.vnum, schedule='static'):
-      for v in xrange(self.vnum):
+      for v in prange(self.vnum, schedule='static'):
+      #for v in xrange(self.vnum):
 
         dx = self.DX[v]
         dy = self.DY[v]
