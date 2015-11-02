@@ -32,7 +32,7 @@ def main(args):
 
   xyz, mode = get_initial_cloud(start_num, start_rad)
   rules = array(
-    [[1,1],
+    [[1,0],
      [1,0]],
     'int'
   )
