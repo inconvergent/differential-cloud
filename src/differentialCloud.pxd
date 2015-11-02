@@ -20,8 +20,11 @@ cdef class DifferentialCloud(cloud.Cloud):
   cdef double *DZ
 
   cdef long *rules
+  cdef long num_rules
 
   ## FUNCTIONS
+
+  cdef long __get_rule_by_types(self, long i, long j)
 
   cdef long __reject(
     self,
@@ -33,7 +36,7 @@ cdef class DifferentialCloud(cloud.Cloud):
     long *vertices,
     double *dst,
     long num
-  ) nogil
+  )
 
   ## EXTERNAL
 

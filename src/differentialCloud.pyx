@@ -29,8 +29,8 @@ cdef class DifferentialCloud(cloud.Cloud):
     cloud.Cloud.__init__(self, nmax, zonewidth, procs)
 
     self.nearl = nearl
-
     self.farl = farl
+    self.num_rules = 0
 
     print('nearl: {:f}'.format(nearl))
     print('farl: {:f}'.format(farl))
@@ -56,6 +56,14 @@ cdef class DifferentialCloud(cloud.Cloud):
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
+  cdef long __get_rule_by_types(self, long i, long j):
+
+    cdef long k = i*self.num_rules+j
+    return self.rules[k]
+
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
   @cython.cdivision(True)
   cdef long __reject(
     self,
@@ -67,51 +75,55 @@ cdef class DifferentialCloud(cloud.Cloud):
     long *vertices,
     double *dst,
     long num
-  ) nogil:
+  ):
 
-    #cdef long k
-    #cdef long i
-    #cdef long k4
-    #cdef long neigh
+    cdef long k
+    cdef long i
+    cdef long k4
 
-    #cdef double dx
-    #cdef double dy
-    #cdef double dz
-    #cdef double nrm
-    #cdef double s
+    cdef double dx
+    cdef double dy
+    cdef double dz
+    cdef double nrm
+    cdef double s
 
-    #cdef long cont
+    cdef double resx = 0.0
+    cdef double resy = 0.0
+    cdef double resz = 0.0
+    cdef long rule
 
-    #cdef double resx = 0.0
-    #cdef double resy = 0.0
-    #cdef double resz = 0.0
+    for k in range(num):
 
-    #for k in range(num):
+      neigh = vertices[k]
 
-      #neigh = vertices[k]
+      if neigh == v:
+        continue
 
-      #if neigh == v:
-        #continue
+      k4 = k*4
+      nrm = dst[k4+3]
 
-      #k4 = k*4
-      #nrm = dst[k4+3]
+      if nrm>self.farl or nrm<=self.nearl:
+        continue
 
-      #if nrm>self.farl or nrm<=1e-9:
-        #continue
+      dx = dst[k4]
+      dy = dst[k4+1]
+      dz = dst[k4+2]
+      rule = self.__get_rule_by_types(self.A[v], self.A[neigh])
 
-      #dx = dst[k4]
-      #dy = dst[k4+1]
-      #dz = dst[k4+2]
+      s = self.farl/nrm-1.0
 
-      #s = self.farl/nrm-1.0
+      if rule == 0:
+        pass
+      else:
+        s *= -1.0
 
-      #resx += dx*s
-      #resy += dy*s
-      #resz += dz*s
+      resx += dx*s
+      resy += dy*s
+      resz += dz*s
 
-    #diffx[v] += resx*stp
-    #diffy[v] += resy*stp
-    #diffz[v] += resz*stp
+    diffx[v] += resx*stp
+    diffy[v] += resy*stp
+    diffz[v] += resz*stp
 
     return num
 
@@ -128,6 +140,7 @@ cdef class DifferentialCloud(cloud.Cloud):
     cdef long k
     cdef long s = len(r)
     self.rules = <long *>malloc(s*s*sizeof(long))
+    self.num_rules = s
 
     for i in xrange(s):
       for j in xrange(s):
