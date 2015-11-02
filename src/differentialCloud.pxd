@@ -50,6 +50,11 @@ cdef class DifferentialCloud(cloud.Cloud):
     np.ndarray[long, mode="c",ndim=2] r
   )
 
+  cpdef long spawn(
+    self,
+    np.ndarray[long, mode="c",ndim=1] rnd
+  )
+
   cpdef long optimize_position(
     self,
     double reject_stp,

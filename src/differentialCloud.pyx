@@ -102,7 +102,7 @@ cdef class DifferentialCloud(cloud.Cloud):
       k4 = k*4
       nrm = dst[k4+3]
 
-      if nrm>self.farl or nrm<=self.nearl*10.0:
+      if nrm>self.farl or nrm<=self.nearl:
         continue
 
       dx = dst[k4]
@@ -149,6 +149,44 @@ cdef class DifferentialCloud(cloud.Cloud):
 
     return 1
 
+
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
+  cpdef long spawn(
+    self,
+    np.ndarray[long, mode="c",ndim=1] rnd
+  ):
+
+    from numpy.random import random
+
+    cdef long i
+    cdef long v
+    cdef long a
+    cdef long n = len(rnd)
+
+    #with nogil:
+    if True:
+
+      for i in xrange(n):
+
+        v = rnd[i]
+        self.X[self.vnum] = self.X[v]
+        self.Y[self.vnum] = self.Y[v]
+        self.Z[self.vnum] = self.Z[v]
+        #self.X[self.vnum] = 0.5 + (1.0-2*random())*0.01
+        #self.Y[self.vnum] = 0.5 + (1.0-2*random())*0.01
+        #self.Z[self.vnum] = 0.5 + (1.0-2*random())*0.01
+        a = self.A[v]
+        if a == 0:
+          self.A[self.vnum] = 1
+        else:
+          self.A[self.vnum] = 0
+
+        self.zonemap.__add_vertex(self.vnum)
+        self.vnum += 1
+
+    return n
 
   @cython.wraparound(False)
   @cython.boundscheck(False)

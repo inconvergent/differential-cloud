@@ -11,6 +11,7 @@ def main(args):
   from modules.helpers import make_info_str
   from modules.utils import get_initial_cloud
   from modules.utils import export_obj
+  from numpy.random import random
   from numpy import array
 
   reject = args.reject*args.stp
@@ -43,6 +44,10 @@ def main(args):
   for i in xrange(args.itt):
 
     try:
+
+      rnd = (random(size=DC.get_vnum())<0.001).nonzero()[0]
+      if len(rnd)>0:
+        DC.spawn(rnd)
 
       DC.optimize_position(
         reject,
