@@ -150,10 +150,10 @@ cdef class DifferentialCloud(cloud.Cloud):
     return 1
 
 
-  #@cython.wraparound(False)
-  #@cython.boundscheck(False)
-  #@cython.nonecheck(False)
-  #@cython.cdivision(True)
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
+  @cython.cdivision(True)
   cpdef long optimize_position(
     self,
     double reject_stp,

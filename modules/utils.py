@@ -23,31 +23,21 @@ def get_initial_cloud(num, rad):
 
   return xyz, mode
 
-def export_obj(dm, obj_name, fn, write_intensity=False, meta=False):
+def export_obj(dc, obj_name, fn, meta=False):
 
   from numpy import zeros
   from codecs import open
   from time import time
 
-  vnum = dm.get_vnum()
-  fnum = dm.get_fnum()
-  henum = dm.get_henum()
+  vnum = dc.get_vnum()
   np_verts = zeros((vnum,3),'float')
-  np_tris = zeros((fnum,3),'int')
 
-  runtime = time()-dm.get_start_time()
+  runtime = time()-dc.get_start_time()
 
-  dm.np_get_vertices(np_verts)
-  dm.np_get_triangles_vertices(np_tris)
-
-  intensity = None
-
-  if write_intensity:
-    intensity = zeros(vnum,'double')
-    dm.get_vertices_intensity(intensity)
+  dc.np_get_vertices(np_verts)
 
   print('storing mesh ...')
-  print('num vertices: {:d}, num triangles: {:d}'.format(vnum, fnum))
+  print('num vertices: {:d}'.format(vnum))
 
   with open(fn, 'wb', encoding='utf8') as f:
 
@@ -57,28 +47,13 @@ def export_obj(dm, obj_name, fn, write_intensity=False, meta=False):
 
     f.write('# info:\n')
 
-    f.write('# vnum: {:d}\n# henum: {:d}\n# fnum: {:d}\n# runtime: {:f}\n\n'
-      .format(vnum, fnum, henum, runtime))
+    f.write('# vnum: {:d}\n# runtime: {:f}\n\n'
+      .format(vnum, runtime))
 
     f.write('o {:s}\n'.format(obj_name))
 
     for v in np_verts[:vnum,:]:
       f.write('v {:f} {:f} {:f}\n'.format(*v))
-
-    f.write('s off\n')
-
-    for t in np_tris[:fnum,:]:
-      t += 1
-      f.write('f {:d} {:d} {:d}\n'.format(*t))
-
-  if write_intensity:
-
-    with open(fn+'.x', 'wb', encoding='utf8') as f:
-
-      f.write('o {:s}\n'.format(obj_name))
-
-      for i in intensity[:vnum]:
-        f.write('c {:f} {:f} {:f}\n'.format(*[i]*3))
 
     print('done.')
 

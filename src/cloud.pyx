@@ -158,7 +158,7 @@ cdef class Cloud:
   cpdef long np_get_vertices(self, np.ndarray[double, mode="c",ndim=2] x):
 
     cdef long v
-    cdef long c
+    cdef long c = 0
 
     for v in xrange(self.vnum):
 

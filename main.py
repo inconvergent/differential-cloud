@@ -52,17 +52,16 @@ def main(args):
       if i%stat==0:
         print_stats(i, DC, meta=None)
 
-      #if i%export==0:
-        #export_obj(
-          #DC,
-          #'thing_mesh',
-          #'{:s}_{:012d}.obj'.format(out, i),
-          #write_intensity=False,
-          #meta=make_info_str(args)
-        #)
+      if i%export==0:
+        export_obj(
+          DC,
+          'cloud',
+          '{:s}_{:012d}.obj'.format(out, i),
+          meta=make_info_str(args)
+        )
 
-      #if DC.get_vnum()>vnum_max:
-        #return
+      if DC.get_vnum()>vnum_max:
+        return
 
     except KeyboardInterrupt:
 
