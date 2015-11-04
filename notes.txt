@@ -1,0 +1,9 @@
+
+for f in res/*.obj ; do echo $f ; ./render_exported_2d.py --fn $f  --alpha 0.15 --size 500 --scale 2 ; done
+
+for f in *.png ; do echo $f ; convert $f -bordercolor White -border 420x0 $f.x ; done
+
+n *.png ; do echo $f ; convert -resize 1280x720 $f $f.x ; done
+
+avconv -r 30 -i "%05d.png" -b:v 1300k -g 2 test.mp4
+
