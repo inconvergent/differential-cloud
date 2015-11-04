@@ -1,0 +1,13 @@
+#!/bin/bash
+
+module load intelcomp/14.0.1
+module load mpt/2.09
+module load python/2.7.6
+
+rm -f src/*.html src/*.c
+rm -f modules/*.pyc
+rm -f *.so
+rm -f *.pyc
+rm -rf build
+/sw/sdev/Modules/python/python-2.7.6/bin/python setup.py build_ext --inplace
+

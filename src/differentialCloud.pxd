@@ -13,6 +13,7 @@ from zonemap3d cimport Zonemap3d
 cdef class DifferentialCloud(cloud.Cloud):
 
   cdef double nearl
+  cdef double midl
   cdef double farl
 
   cdef double *DX

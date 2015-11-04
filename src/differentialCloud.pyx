@@ -11,6 +11,7 @@ from zonemap3d cimport Zonemap3d
 from cython.parallel import parallel, prange
 
 from libc.math cimport sqrt
+from libc.math cimport pow
 from libc.math cimport cos
 from libc.math cimport sin
 from libc.math cimport fabs
@@ -24,15 +25,25 @@ cimport numpy as np
 
 cdef class DifferentialCloud(cloud.Cloud):
 
-  def __init__(self, long nmax, double zonewidth, double nearl, double farl, long procs):
+  def __init__(
+    self,
+    long nmax,
+    double zonewidth,
+    double nearl,
+    double midl,
+    double farl,
+    long procs
+  ):
 
     cloud.Cloud.__init__(self, nmax, zonewidth, procs)
 
     self.nearl = nearl
+    self.midl = midl
     self.farl = farl
     self.num_rules = 0
 
     print('nearl: {:f}'.format(nearl))
+    print('midl: {:f}'.format(midl))
     print('farl: {:f}'.format(farl))
 
     return
@@ -102,20 +113,29 @@ cdef class DifferentialCloud(cloud.Cloud):
       k4 = k*4
       nrm = dst[k4+3]
 
-      if nrm>self.farl or nrm<=self.nearl:
+      if nrm < 1.e-10 or nrm>self.farl:
+        continue
+
+      rule = self.__get_rule_by_types(self.A[v], self.A[neigh])
+
+      if nrm < self.nearl:
+        # always reject
+        #s = self.farl/nrm-1.0
+        s = 1.0 - nrm/self.nearl
+      elif nrm < self.midl:
+        # attract if rule == 1, else reject
+        s = pow(-1.0, <double>rule+1.0)*\
+          (nrm - self.nearl)/(self.midl-self.nearl)
+      elif nrm <= self.farl:
+        # attract if rule == 1, else reject
+        s = pow(-1.0, <double>rule+1.0)*\
+          (1.0 - (nrm-self.midl)/(self.farl-self.midl))
+      else:
         continue
 
       dx = dst[k4]
       dy = dst[k4+1]
       dz = dst[k4+2]
-      rule = self.__get_rule_by_types(self.A[v], self.A[neigh])
-
-      s = self.farl/nrm-1.0
-
-      if rule == 0:
-        pass
-      else:
-        s *= -1.0
 
       resx += dx*s
       resy += dy*s

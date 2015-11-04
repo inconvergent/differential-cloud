@@ -23,6 +23,28 @@ def get_initial_cloud(num, rad):
 
   return xyz, mode
 
+def load(fn):
+
+  from codecs import open
+
+  vertices = []
+
+  with open(fn, 'r', encoding='utf8') as f:
+
+    for l in f:
+      if l.startswith('#'):
+        continue
+
+      values = l.split()
+      if not values:
+        continue
+      if values[0] == 'v':
+        vertices.append([float(v) for v in values[1:]])
+
+  return {
+    'vertices': vertices
+  }
+
 def export_obj(dc, obj_name, fn, meta=False):
 
   from numpy import zeros
