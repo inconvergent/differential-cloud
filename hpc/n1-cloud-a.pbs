@@ -12,7 +12,7 @@ home=/home/ntnu/andehoff/
 project=$home/x/differential-cloud/
 program=$project/main.py
 
-name=dla
+name=n1ca
 prefix=/work/andehoff/differential-cloud/
 targetDir=$prefix/$name/
 fullPath=$targetDir/$name
@@ -23,15 +23,15 @@ export PYTHONPATH=$home/.local/lib/python2.7/site-packages/
 export OMP_NUM_THREADS=$procs
 
 mkdir -p $targetDir
-rm -rf $fullPath*.xobj
-
+rm -rf $fullPath*.obj
 
 module load intelcomp/14.0.1
 module load mpt/2.09
 module load python/2.7.6
 
+
 $python $program \
-  --out "$name" \
+  --out "$fullPath" \
   --procs 16 \
   --vnum 100000000 \
   --nearl 0.0028 \
