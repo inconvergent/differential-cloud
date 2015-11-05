@@ -1,7 +1,5 @@
 # Differential Cloud
 
-<!--![ani](/img/ani.gif?raw=true "animation")-->
-
 ![img](/img/img.png?raw=true "img")
 
 
