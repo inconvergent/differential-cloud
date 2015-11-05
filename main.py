@@ -10,9 +10,9 @@ def main(args):
   from modules.helpers import print_stats
   from modules.helpers import make_info_str
   from modules.utils import get_initial_cloud
-  from modules.utils import export_obj
+  from dddUtils.ioOBJ import export as export_obj
   from numpy.random import random
-  from numpy import array
+  from numpy import array, zeros
 
   reject = args.reject*args.stp
   attract = args.attract*args.stp
@@ -22,6 +22,8 @@ def main(args):
   vnum_max = args.vnum
   start_num = args.startNum
   start_rad = args.startRad
+
+  np_verts = zeros((args.nmax, 3), 'float')
 
   DC = DifferentialCloud(
     nmax = args.nmax,
@@ -59,11 +61,14 @@ def main(args):
         print_stats(i, DC, meta=None)
 
       if i%export==0:
+
+        vnum = DC.np_get_vertices(np_verts)
         export_obj(
-          DC,
-          'cloud',
-          '{:s}_{:012d}.obj'.format(out, i),
-          meta=make_info_str(args)
+          obj_name = 'cloud',
+          fn = '{:s}_{:012d}.obj'.format(out, i),
+          verts = np_verts[:vnum,:],
+          tris = None,
+          meta = make_info_str(args)
         )
 
       if DC.get_vnum()>vnum_max:

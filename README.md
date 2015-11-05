@@ -8,6 +8,7 @@
 In order for this code to run you must first download and install:
 
 *    `zonemap3d`: https://github.com/inconvergent/zonemap-3d
+*    `ddd-utils`: https://github.com/inconvergent/ddd-utils
 
 ## Other Dependencies
 

@@ -1,28 +1,25 @@
-# -*- coding: utf-8 -*-
-
-from sys import path
-path.append('.')
-
 import bpy
 
 
 def main(argv):
 
-  from modules.blender_utils import Obj
+  from time import time
+  from dddUtils.blender import Obj
 
-  name = argv[0]
+  fn = argv[0]
 
-  print('importing: ' + name)
+  print('importing: ' + fn)
 
-  O = Obj(name, 'a')
-  O.get_vertex_color()
-  O.smooth(1)
+  t1 = time()
+
+  O = Obj(fn,'a')
   O.move_rescale([-0.5]*3, 100)
-  O.apply_mat()
+  O.spheres()
+  O.del_mesh()
 
-  prefix = name.split('_')[0]
+  print('\ntime:',time()-t1,'\n\n')
 
-  bpy.ops.wm.save_as_mainfile(filepath='{:s}.blend'.format(prefix))
+  bpy.ops.wm.save_as_mainfile(filepath='./test.blend')
 
 
 if __name__ == '__main__':

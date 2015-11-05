@@ -2,7 +2,6 @@
 
 from sys import path
 path.append('.')
-
 import bpy
 
 
@@ -10,7 +9,7 @@ def main(argv):
 
   from glob import glob
   from os import chdir
-  from modules.blender_utils import Obj
+  from dddUtils.blender import Obj
 
   name = argv[0]
   dirname = './res/'
@@ -20,6 +19,7 @@ def main(argv):
   count = 0
 
   chdir(dirname)
+  print(dirname)
   for fn in sorted(glob('{:s}_*.obj'.format(name))):
 
     print('importing: ' + fn)

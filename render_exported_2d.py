@@ -16,15 +16,14 @@ def get_mid(v):
 def main(args):
 
   from render.render import Render
-  from modules.utils import load
+  from dddUtils.ioOBJ import load
   from numpy import array
-  from numpy import row_stack
 
   data = load(args.fn)
 
   size = args.size
   one = 1.0/size
-  vertices = row_stack(data['vertices'])[:,:2]
+  vertices = data['vertices'][:,:2]
 
   back = [1,1,1,1]
   front = [0,0,0,args.alpha]

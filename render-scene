@@ -4,11 +4,12 @@ set -e
 source settings
 here=$(pwd)
 name="$1"
-run_script="$here/make_scene.py"
+run_script="$here/make_sphere_scene.py"
 
 if [ -z "$name" ]
 then
-  name=res
+  echo "you must specify an obj file."
+  exit
 fi
 echo "constructing scene name: $name."
 
