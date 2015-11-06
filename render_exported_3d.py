@@ -19,7 +19,7 @@ def main(argv):
 
   print('\ntime:',time()-t1,'\n\n')
 
-  bpy.ops.wm.save_as_mainfile(filepath='./test.blend')
+  bpy.ops.wm.save_as_mainfile(filepath=''.join(fn.split('.')[:-1])+'.blend')
 
 
 if __name__ == '__main__':
