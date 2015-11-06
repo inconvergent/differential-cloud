@@ -4,7 +4,7 @@ import bpy
 def main(argv):
 
   from time import time
-  from dddUtils.blender import Obj
+  from dddUtils.blender import Cloud
 
   fn = argv[0]
 
@@ -12,10 +12,10 @@ def main(argv):
 
   t1 = time()
 
-  O = Obj(fn,'a')
-  O.move_rescale([-0.5]*3, 100)
-  O.spheres()
-  O.del_mesh()
+  C = Cloud(fn,'a')
+  C.move_rescale(set_pivot=[0.5,-0.5,0.5], pos=[0,0,0], scale=100)
+  C.spheres(scale=0.01)
+  # O.del_mesh()
 
   print('\ntime:',time()-t1,'\n\n')
 
