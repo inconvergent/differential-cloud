@@ -25,7 +25,7 @@ def main(argv):
     print('importing: ' + fn)
 
     O = Obj(fn, 'a')
-    O.get_vertex_color()
+    # O.get_vertex_color()
     O.move_rescale(set_pivot=[0.5,-0.5,0.5], pos=[0,0,0], scale=100)
     O.animate_vis(count, count+1)
     O.apply_mat()
