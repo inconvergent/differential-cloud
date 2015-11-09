@@ -5,5 +5,9 @@ for f in *.png ; do echo $f ; convert $f -bordercolor White -border 420x0 $f.x ;
 
 n *.png ; do echo $f ; convert -resize 1280x720 $f $f.x ; done
 
-avconv -r 30 -i "%05d.png" -b:v 1300k -g 2 test.mp4
+~/bin/ffmpeg -r 40 -i "%05d.png" -b:v 50000k -g 15  -filter:v 'eq=1.15:0.1:1.2:1.2' test2.mp4 
+
+# contrast: brightness sat: gamma
+
+~/bin/ffmpeg -i test2.mp4 -r 40 -b:v 50000k -g 15  -filter:v 'pad=1920:1080:(ow-iw)/2:(oh-ih)/2:white' test3.mp4 
 
