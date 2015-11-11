@@ -17,9 +17,8 @@ python main.py \
   --procs 6 \
   --vnum 100000000 \
   --nearl 0.0028 \
-  --midl 0.008 \
-  --farl 0.05 \
-  --stp 1.0e-5 \
+  --farl 0.01 \
+  --stp 1.0e-6 \
   --attract 0.9 \
   --reject 1.0 \
   --stat 10 \

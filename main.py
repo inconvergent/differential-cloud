@@ -23,26 +23,33 @@ def main(args):
   start_num = args.startNum
   start_rad = args.startRad
 
+  nearl = args.nearl
+  farl = args.farl
+
   np_verts = zeros((args.nmax, 3), 'float')
 
   DC = DifferentialCloud(
     nmax = args.nmax,
     zonewidth = args.farl,
-    nearl = args.nearl,
-    midl = args.midl,
-    farl = args.farl,
     procs = args.procs
   )
 
   xyz, mode = get_initial_cloud(start_num, start_rad)
-  rules = array(
-    [[1,1],
-     [1,0]],
-    'int'
-  )
 
   DC.init_cloud(xyz, mode)
-  DC.init_rules(rules)
+  DC.init_rules(
+    num_particle_types = 2,
+    interactions = array(
+      [[1.0,1.0],
+       [1.0,-1.0]],
+      'double'
+    ),
+    distances = array(
+      [[nearl,farl],
+       [nearl,farl]],
+      'double'
+    )
+  )
 
   for i in xrange(args.itt):
 
@@ -54,7 +61,8 @@ def main(args):
 
       DC.optimize_position(
         reject,
-        attract
+        attract,
+        stp_limit = nearl*0.3
       )
 
       if i%stat==0:

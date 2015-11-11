@@ -21,11 +21,6 @@ def get_args():
     default=0.003
   )
   parser.add_argument(
-    '--midl',
-    type=float,
-    default=0.008
-  )
-  parser.add_argument(
     '--farl',
     type=float,
     default=0.05
