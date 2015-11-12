@@ -20,12 +20,23 @@ cdef class DifferentialCloud(cloud.Cloud):
   cdef double *DY
   cdef double *DZ
 
-  cdef long *rules
-  cdef long num_rules
+  cdef double *interactions
+  cdef double *distances
+  cdef long ptnum
 
   ## FUNCTIONS
 
-  cdef long __get_rule_by_types(self, long i, long j) nogil
+  cdef double __get_interaction_by_types(self, long i, long j) nogil
+
+  cdef double __get_interaction_by_id(self, long i, long j) nogil
+
+  cdef double __get_particle_rad(self, long i) nogil
+
+  cdef double __get_particles_radii(self, long i, long j) nogil
+
+  cdef double __get_particles_harmonic_radii(self, long i, long j) nogil
+
+  cdef double __get_particle_far(self, long i) nogil
 
   cdef long __rules(
     self,
@@ -48,7 +59,8 @@ cdef class DifferentialCloud(cloud.Cloud):
 
   cpdef long init_rules(
     self,
-    np.ndarray[long, mode="c",ndim=2] r
+    np.ndarray[double, mode="c",ndim=2] interactions,
+    np.ndarray[double, mode="c",ndim=2] distances
   )
 
   cpdef long spawn(
@@ -59,6 +71,7 @@ cdef class DifferentialCloud(cloud.Cloud):
   cpdef long optimize_position(
     self,
     double reject_stp,
-    double attract_stp
+    double attract_stp,
+    double limit_stp
   )
 

@@ -12,9 +12,6 @@ from cython.parallel import parallel, prange
 
 from libc.math cimport sqrt
 from libc.math cimport pow
-from libc.math cimport cos
-from libc.math cimport sin
-from libc.math cimport fabs
 
 from helpers cimport double_array_init
 from helpers cimport long_array_init
@@ -40,10 +37,9 @@ cdef class DifferentialCloud(cloud.Cloud):
     self.nearl = nearl
     self.midl = midl
     self.farl = farl
-    self.num_rules = 0
+    self.ptnum = 0
 
     print('nearl: {:f}'.format(nearl))
-    print('midl: {:f}'.format(midl))
     print('farl: {:f}'.format(farl))
 
     return
@@ -67,10 +63,44 @@ cdef class DifferentialCloud(cloud.Cloud):
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cdef long __get_rule_by_types(self, long i, long j) nogil:
+  cdef double __get_interaction_by_types(self, long i, long j) nogil:
 
-    cdef long k = i*self.num_rules+j
-    return self.rules[k]
+    return self.interactions[i*self.ptnum+j]
+
+  cdef double __get_interaction_by_id(self, long i, long j) nogil:
+
+    return self.interactions[self.A[i]*self.ptnum+self.A[j]]
+
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
+  cdef double __get_particle_rad(self, long i) nogil:
+
+    return self.distances[2*self.A[i]]
+
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
+  cdef double __get_particles_radii(self, long i, long j) nogil:
+
+    return self.distances[2*self.A[i]] + self.distances[2*self.A[j]]
+
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
+  cdef double __get_particles_harmonic_radii(self, long i, long j) nogil:
+
+    cdef double a = self.distances[2*self.A[i]]
+    cdef double b = self.distances[2*self.A[j]]
+
+    return  a*b/(a+b)
+
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
+  cdef double __get_particle_far(self, long i) nogil:
+
+    return self.distances[2*self.A[i]+1]
 
   @cython.wraparound(False)
   @cython.boundscheck(False)
@@ -101,7 +131,11 @@ cdef class DifferentialCloud(cloud.Cloud):
     cdef double resx = 0.0
     cdef double resy = 0.0
     cdef double resz = 0.0
-    cdef long rule
+    cdef double interaction
+    cdef double vrad = self.__get_particle_rad(v)
+    cdef double vfar = self.__get_particle_far(v)
+
+    cdef double nvmid
 
     for k in range(num):
 
@@ -113,23 +147,25 @@ cdef class DifferentialCloud(cloud.Cloud):
       k4 = k*4
       nrm = dst[k4+3]
 
-      if nrm < 1.e-10 or nrm>self.farl:
+      if nrm < 1.e-10 or nrm>vfar:
         continue
 
-      rule = self.__get_rule_by_types(self.A[v], self.A[neigh])
+      interaction = self.__get_interaction_by_id(v, neigh)
+      nvmid = self.__get_particles_harmonic_radii(v, neigh)*4.0
+      # TODO: fix this
+      nvmid = 0.008
 
-      if nrm < self.nearl:
+      # print(self.nearl, nvmid, self.midl, self.farl)
+
+      if nrm < vrad:
         # always reject
-        #s = self.farl/nrm-1.0
-        s = 1.0 - nrm/self.nearl
-      elif nrm < self.midl:
-        # attract if rule == 1, else reject
-        s = pow(-1.0, <double>rule+1.0)*\
-          (nrm - self.nearl)/(self.midl-self.nearl)
-      elif nrm <= self.farl:
-        # attract if rule == 1, else reject
-        s = pow(-1.0, <double>rule+1.0)*\
-          (1.0 - (nrm-self.midl)/(self.farl-self.midl))
+        s = 1.0 - nrm/vrad
+      elif nrm < nvmid:
+        # attract if interaction > 0, else reject
+        s = interaction*(nrm - vrad)/(nvmid-vrad)
+      elif nrm <= vfar:
+        # attract if interaction > 0, else reject
+        s = interaction*(1.0 - (nrm-nvmid)/(vfar-nvmid))
       else:
         continue
 
@@ -152,23 +188,26 @@ cdef class DifferentialCloud(cloud.Cloud):
   @cython.nonecheck(False)
   cpdef long init_rules(
     self,
-    np.ndarray[long, mode="c",ndim=2] r
+    np.ndarray[double, mode="c",ndim=2] interactions,
+    np.ndarray[double, mode="c",ndim=2] distances
   ):
 
     cdef long i
     cdef long j
-    cdef long k
-    cdef long s = len(r)
-    self.rules = <long *>malloc(s*s*sizeof(long))
-    self.num_rules = s
+    cdef long s = len(interactions)
+    self.interactions = <double *>malloc(s*s*sizeof(double))
+    self.distances = <double *>malloc(2*s*sizeof(double))
+    self.ptnum = s
 
     for i in xrange(s):
       for j in xrange(s):
-        k = i*s+j
-        self.rules[k] = r[i,j]
+        self.interactions[i*s+j] = interactions[i,j]
+
+    for i in xrange(s):
+      self.distances[i*2] = distances[i,0]
+      self.distances[i*2+1] = distances[i,1]
 
     return 1
-
 
   @cython.wraparound(False)
   @cython.boundscheck(False)
@@ -185,8 +224,8 @@ cdef class DifferentialCloud(cloud.Cloud):
     cdef long a
     cdef long n = len(rnd)
 
-    #with nogil:
-    if True:
+    with nogil:
+    # if True:
 
       for i in xrange(n):
 
@@ -194,9 +233,6 @@ cdef class DifferentialCloud(cloud.Cloud):
         self.X[self.vnum] = self.X[v]
         self.Y[self.vnum] = self.Y[v]
         self.Z[self.vnum] = self.Z[v]
-        #self.X[self.vnum] = 0.5 + (1.0-2*random())*0.01
-        #self.Y[self.vnum] = 0.5 + (1.0-2*random())*0.01
-        #self.Z[self.vnum] = 0.5 + (1.0-2*random())*0.01
         a = self.A[v]
         if a == 0:
           self.A[self.vnum] = 1
@@ -216,6 +252,7 @@ cdef class DifferentialCloud(cloud.Cloud):
     self,
     double reject_stp,
     double attract_stp,
+    double limit_stp
   ):
 
     cdef long v
@@ -228,7 +265,6 @@ cdef class DifferentialCloud(cloud.Cloud):
     cdef double dy
     cdef double dz
     cdef double nrm
-    cdef double stp_limit = self.nearl*0.3
 
     cdef long *vertices
     cdef long num
@@ -237,13 +273,14 @@ cdef class DifferentialCloud(cloud.Cloud):
     cdef long asize = self.zonemap.__get_max_sphere_count()
 
     with nogil, parallel(num_threads=self.procs):
-    #with nogil:
+    # with nogil:
+    # if True:
 
       vertices = <long *>malloc(asize*sizeof(long))
       dst = <double *>malloc(asize*sizeof(double)*4)
 
       for v in prange(self.vnum, schedule='guided'):
-      #for v in xrange(self.vnum):
+      # for v in xrange(self.vnum):
 
         self.DX[v] = 0.0
         self.DY[v] = 0.0
@@ -253,7 +290,7 @@ cdef class DifferentialCloud(cloud.Cloud):
           self.X[v],
           self.Y[v],
           self.Z[v],
-          self.farl,
+          self.__get_particle_far(v),
           vertices,
           dst
         )
@@ -272,7 +309,7 @@ cdef class DifferentialCloud(cloud.Cloud):
       free(dst)
 
       for v in prange(self.vnum, schedule='static'):
-      #for v in xrange(self.vnum):
+      # for v in xrange(self.vnum):
 
         dx = self.DX[v]
         dy = self.DY[v]
@@ -280,10 +317,11 @@ cdef class DifferentialCloud(cloud.Cloud):
 
         nrm = sqrt(dx*dx+dy*dy+dz*dz)
 
-        if nrm>stp_limit:
-          dx = dx / nrm * stp_limit
-          dy = dy / nrm * stp_limit
-          dz = dz / nrm * stp_limit
+        if nrm>limit_stp:
+          nrm = limit_stp/nrm
+          dx = dx * nrm
+          dy = dy * nrm
+          dz = dz * nrm
 
         x = self.X[v] + dx
         y = self.Y[v] + dy
